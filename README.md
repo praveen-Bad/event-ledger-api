@@ -83,7 +83,7 @@ Use the following configuration:
 ```text
 JDBC URL: jdbc:h2:mem:eventdb
 Username: sa
-Password:
+Password:1234
 ```
 
 ---
