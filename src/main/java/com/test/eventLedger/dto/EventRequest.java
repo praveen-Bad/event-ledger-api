@@ -8,6 +8,7 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Map;
 
 @Data
 public class EventRequest {
@@ -31,5 +32,4 @@ public class EventRequest {
     @NotNull
     private Instant eventTimestamp;
 
-    private String metadata;
-}
+    private Map<String, Object> metadata;}

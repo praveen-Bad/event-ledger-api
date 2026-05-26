@@ -1,5 +1,6 @@
 package com.test.eventLedger.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.test.eventLedger.dto.EventRequest;
 import com.test.eventLedger.dto.EventResponse;
 import com.test.eventLedger.entity.Event;
@@ -29,7 +30,7 @@ public class EventController {
 
     @GetMapping("/{id}")
     public ResponseEntity<EventResponse> getEvent(
-            @PathVariable String id) {
+            @PathVariable String id) throws JsonProcessingException {
 
         return ResponseEntity.ok(service.getEvent(id));
     }

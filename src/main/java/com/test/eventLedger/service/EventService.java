@@ -1,5 +1,8 @@
 package com.test.eventLedger.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.test.eventLedger.dto.BalanceResponse;
 import com.test.eventLedger.dto.EventRequest;
 import com.test.eventLedger.dto.EventResponse;
@@ -7,16 +10,19 @@ import com.test.eventLedger.entity.Event;
 import com.test.eventLedger.exception.ResourceNotFoundException;
 import com.test.eventLedger.repository.EventRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
 
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 public class EventService {
 
     private final EventRepository repository;
+    private final ObjectMapper objectMapper;
 
     public EventResponse createEvent(EventRequest request) {
 
@@ -24,15 +30,20 @@ public class EventService {
                 .map(this::mapToResponse)
                 .orElseGet(() -> {
 
-                    Event event = Event.builder()
-                            .eventId(request.getEventId())
-                            .accountId(request.getAccountId())
-                            .type(request.getType())
-                            .amount(request.getAmount())
-                            .currency(request.getCurrency())
-                            .eventTimestamp(request.getEventTimestamp())
-                            .metadata(request.getMetadata())
-                            .build();
+                    Event event = null;
+                    try {
+                        event = Event.builder()
+                                .eventId(request.getEventId())
+                                .accountId(request.getAccountId())
+                                .type(request.getType())
+                                .amount(request.getAmount())
+                                .currency(request.getCurrency())
+                                .eventTimestamp(request.getEventTimestamp())
+                                .metadata(objectMapper.writeValueAsString(request.getMetadata()))
+                                .build();
+                    } catch (JsonProcessingException e) {
+                        throw new RuntimeException(e);
+                    }
 
                     Event saved = repository.save(event);
 
@@ -61,6 +72,7 @@ public class EventService {
         );
     }
 
+    @SneakyThrows
     private EventResponse mapToResponse(Event event) {
 
         return EventResponse.builder()
@@ -70,7 +82,12 @@ public class EventService {
                 .amount(event.getAmount())
                 .currency(event.getCurrency())
                 .eventTimestamp(event.getEventTimestamp())
-                .metadata(event.getMetadata())
+                .metadata(
+                        objectMapper.readValue(
+                                event.getMetadata(),
+                                new TypeReference<Map<String, Object>>() {}
+                        )
+                )
                 .build();
     }
 }
